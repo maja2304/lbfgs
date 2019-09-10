@@ -209,7 +209,8 @@ class LbfgsClass:
 			if x_norm < 1.0:
 				x_norm = 1.0
 			if g_norm / x_norm <= self.epsilon:
-				print ('[INFO] Completed lbfgs')
+				if self.display != 0:
+					print ('[INFO] Completed lbfgs')
 				return status, fx
 
 			# Provera dostizanja maksimalne vrednosti iteracija
