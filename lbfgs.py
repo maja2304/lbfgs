@@ -19,8 +19,8 @@ class LbfgsIterData:
 class LbfgsClass:
 	# Klasa za parametre LBFGS minimizacije
 
-	# Umesto inverzne Hesian Hk, 
-	# L-BFGS cuva istoriju prethodnih m promena pozicije x i gradijenta ∇f(x), 
+	# Umesto inverzne Hesian Hk,
+	# L-BFGS cuva istoriju prethodnih m promena pozicije x i gradijenta ∇f(x),
 	# Generalno, m je mali broj (m < 10)
 	m = 6
 
@@ -68,7 +68,7 @@ class LbfgsClass:
 	# fx - trenutna vrednost funkcije
 	# step - trenutna duzina koraka
 	# x_prev - prethodne vrednosti pozicija
-		
+
 		dec = 0.5
 		inc = 2.1
 		count = 0
@@ -76,11 +76,13 @@ class LbfgsClass:
 		res = {'status':0,'fx':fx,'step':step,'x':x}
 		if (step <= 0.):
 			res['status'] = -1
+			print('[GRESKA] Korak iteracije je manji od 0')
 			return res
 
 		# Racunanje inicijalnog gradijenta u proceni pravca
 		dginit = dot(grad, dirs)
 		if dginit > 0:
+			print('[GRESKA] Inicijalni gradijent je veci od 0')
 			res['status'] = -1
 			return res
 
@@ -113,14 +115,17 @@ class LbfgsClass:
 			# Ako je trenutni korak manji od minimuma
 			if step < self.min_linesearch_step:
 				res['status'] = -1
+				print('[GRESKA] Dostignut minimalni korak iteracije: step < min_linesearch_step')
 				return res
 			# Ako je trenutni korak veci od maksimuma
 			if step > self.max_linesearch_step:
 				res['status'] = -1
+				print('[GRESKA] Dostignut maksimalni korak iteracije: step > max_linesearch_step')
 				return res
 			# Ako je broj iteracija dostigao maksimalnu vrednost
 			if self.max_linesearch <= count:
-				res = {'status':0, 'fx':fx, 'step':step, 'x':x}
+				res = {'status':-1, 'fx':fx, 'step':step, 'x':x}
+				print('[GRESKA] Dostignut maksimalni broj iteracija: cnt > max_linesearch')
 				return res
 			# Azuriranje koraka
 			step = step * width
@@ -180,13 +185,15 @@ class LbfgsClass:
 			x_prev = x.copy()
 			grad_prev = grad.copy()
 
-			# Obezvedjivanje da su pravci pretrage dobro skalirani 
+			# Obezvedjivanje da su pravci pretrage dobro skalirani
 			ls = self.linesearch(function, x, grad, directions, fx, step, x_prev)
 			if ls['status'] < 0:
 				status = ls['status']
 				x = x_prev.copy()
 				grad = grad_prev.copy()
-				print ('[GRESKA] Vracanje tacaka na prethodne')
+				fx = ls['fx']
+				if self.display != 0:
+					print ('[GRESKA] Vracanje tacaka na prethodne')
 				return status, fx
 
 
@@ -227,7 +234,7 @@ class LbfgsClass:
 			data.s = x - x_prev
 			data.y = grad - grad_prev
 
-			# Racunanje skalara ys i yy: 
+			# Racunanje skalara ys i yy:
 			# ys = y^t \cdot s = 1 / \rho.
 			# yy = y^t \cdot y.
 			# yy se koristi za skaliranje hesian matrice H_0 (Cholesky faktor)
